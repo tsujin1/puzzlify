@@ -8,7 +8,9 @@ export const createGame = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const base64Image = req.file.buffer.toString('base64');
+    const imageUrl = `data:${req.file.mimetype};base64,${base64Image}`;
+
     const gridSize = Number(req.body.gridSize) || 3;
 
     const newGame = await Game.create({

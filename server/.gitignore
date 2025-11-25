@@ -19,9 +19,6 @@ pnpm-debug.log*
 logs/
 *.log
 
-# Uploads or user-generated files
-uploads/
-
 # OS files
 .DS_Store
 Thumbs.db

@@ -1,7 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import path from 'path';
 import dotenv from 'dotenv';
 import gameRoutes from './routes/gameRoutes';
 
@@ -14,9 +13,6 @@ const MONGO_URI =
 
 app.use(cors());
 app.use(express.json());
-
-const uploadsPath = path.join(process.cwd(), 'uploads');
-app.use('/uploads', express.static(uploadsPath));
 
 app.use('/api', gameRoutes);
 
@@ -31,4 +27,3 @@ mongoose
   .catch((err) => {
     console.error('Database connection error:', err);
   });
-
