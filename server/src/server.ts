@@ -9,7 +9,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/puzzlify';
+const MONGO_URI =
+  process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/puzzlify';
 
 app.use(cors());
 app.use(express.json());
@@ -19,7 +20,10 @@ app.use('/uploads', express.static(uploadsPath));
 
 app.use('/api', gameRoutes);
 
-mongoose.connect(MONGO_URI)
+mongoose
+  .connect(MONGO_URI, {
+    ssl: true,
+  })
   .then(() => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => {
@@ -29,3 +33,4 @@ mongoose.connect(MONGO_URI)
   .catch((err) => {
     console.error('Database connection error:', err);
   });
+
