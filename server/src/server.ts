@@ -21,9 +21,7 @@ app.use('/uploads', express.static(uploadsPath));
 app.use('/api', gameRoutes);
 
 mongoose
-  .connect(MONGO_URI, {
-    ssl: true,
-  })
+  .connect(MONGO_URI)
   .then(() => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => {
