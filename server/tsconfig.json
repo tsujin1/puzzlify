@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    // 1. PROJECT STRUCTURE (Critical)
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // 2. MODULE SETTINGS (Standard Node.js)
+    "target": "es2020",         // Good target for modern Node
+    "module": "commonjs",       // Standard for Backend
+    "moduleResolution": "node", // Standard resolution
+    "esModuleInterop": true,    // Allows 'import express from "express"'
+    "skipLibCheck": true,       // Speeds up compilation
+
+    // 3. STRICTNESS
+    "strict": true,
+    "noImplicitAny": true,
+
+    // 4. CLEANUP (Remove React stuff)
+    // "jsx": "react-jsx",      <-- DELETED (Not needed for server)
+    // "verbatimModuleSyntax"   <-- DELETED (Can cause headaches with Express)
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

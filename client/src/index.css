@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* 1. Set the Bubbly Font as Default */
+  --font-sans: "Nunito", sans-serif;
+
+  /* 2. Define Game Colors */
+  --color-canvas: #f0f4f8;        /* Soft background */
+  
+  --color-primary: #3b82f6;       /* Blue */
+  --color-primary-dark: #2563eb;
+  
+  --color-accent: #facc15;        /* Yellow/Orange */
+  --color-accent-dark: #eab308;
+  
+  --color-success: #4ade80;       /* Green */
+
+  /* 3. Define 3D "Tactile" Shadows */
+  --shadow-game: 0px 6px 0px 0px rgba(0,0,0,0.15);
+  --shadow-game-hover: 0px 4px 0px 0px rgba(0,0,0,0.15);
+  --shadow-game-active: 0px 0px 0px 0px rgba(0,0,0,0.15);
+
+  /* 4. Define Animations */
+  --animate-pop: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 5. Define Keyframes (Standard CSS) */
+@keyframes pop {
+  0% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Global Reset ensures full height */
+html, body {
+  height: 100%;
+  background-color: var(--color-canvas);
+}
