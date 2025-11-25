@@ -1,56 +1,60 @@
-const drawPuzzleGrid = (ctx: CanvasRenderingContext2D, width: number, height: number, gridSize: number, yOffset: number) => {
+const drawPuzzleGrid = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, gridSize: number) => {
   const pieceWidth = width / gridSize;
   const pieceHeight = height / gridSize;
   const knobSize = Math.min(pieceWidth, pieceHeight) * 0.15;
 
   ctx.save();
-  ctx.translate(0, yOffset);
+  ctx.translate(x, y);
 
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-  ctx.lineWidth = width / 200;
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+  ctx.lineWidth = 2;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-  ctx.shadowBlur = width / 150;
-  ctx.shadowOffsetX = width / 400;
-  ctx.shadowOffsetY = width / 400;
-
+  // Draw vertical puzzle lines
   for (let i = 1; i < gridSize; i++) {
-    const x = i * pieceWidth;
-    ctx.moveTo(x, 0);
-    for (let j = 0; j < gridSize; j++) {
-      const y = j * pieceHeight;
-      const direction = (i + j) % 2 === 0 ? 1 : -1;
-      ctx.lineTo(x, y + pieceHeight / 2 - knobSize);
-      ctx.bezierCurveTo(
-        x + direction * knobSize, y + pieceHeight / 2 - knobSize,
-        x + direction * knobSize, y + pieceHeight / 2 + knobSize,
-        x, y + pieceHeight / 2 + knobSize
-      );
-      ctx.lineTo(x, y + pieceHeight);
-    }
+    const lineX = i * pieceWidth;
+    ctx.beginPath();
+    ctx.moveTo(lineX, 0);
 
-    const y = i * pieceHeight;
-    ctx.moveTo(0, y);
     for (let j = 0; j < gridSize; j++) {
-      const x = j * pieceWidth;
+      const pieceY = j * pieceHeight;
       const direction = (i + j) % 2 === 0 ? 1 : -1;
-      ctx.lineTo(x + pieceWidth / 2 - knobSize, y);
+
+      ctx.lineTo(lineX, pieceY + pieceHeight / 2 - knobSize);
       ctx.bezierCurveTo(
-        x + pieceWidth / 2 - knobSize, y + direction * knobSize,
-        x + pieceWidth / 2 + knobSize, y + direction * knobSize,
-        x + pieceWidth / 2 + knobSize, y
+        lineX + direction * knobSize, pieceY + pieceHeight / 2 - knobSize,
+        lineX + direction * knobSize, pieceY + pieceHeight / 2 + knobSize,
+        lineX, pieceY + pieceHeight / 2 + knobSize
       );
-      ctx.lineTo(x + pieceWidth, y);
+      ctx.lineTo(lineX, pieceY + pieceHeight);
     }
+    ctx.stroke();
   }
-  ctx.stroke();
 
-  ctx.beginPath();
-  ctx.rect(0, 0, width, height);
-  ctx.stroke();
+  // Draw horizontal puzzle lines
+  for (let i = 1; i < gridSize; i++) {
+    const lineY = i * pieceHeight;
+    ctx.beginPath();
+    ctx.moveTo(0, lineY);
+
+    for (let j = 0; j < gridSize; j++) {
+      const pieceX = j * pieceWidth;
+      const direction = (i + j) % 2 === 0 ? 1 : -1;
+
+      ctx.lineTo(pieceX + pieceWidth / 2 - knobSize, lineY);
+      ctx.bezierCurveTo(
+        pieceX + pieceWidth / 2 - knobSize, lineY + direction * knobSize,
+        pieceX + pieceWidth / 2 + knobSize, lineY + direction * knobSize,
+        pieceX + pieceWidth / 2 + knobSize, lineY
+      );
+      ctx.lineTo(pieceX + pieceWidth, lineY);
+    }
+    ctx.stroke();
+  }
+
+  // Outer border
+  ctx.strokeRect(0, 0, width, height);
   ctx.restore();
 };
 
@@ -73,62 +77,72 @@ export const generateAndDownloadCertificate = ({
   img.onload = () => {
     if (!ctx) return;
 
-    const imageYOffset = 120;
-    const footerHeight = 180;
-    const canvasWidth = img.width;
-    const canvasHeight = img.height + imageYOffset + footerHeight;
+    const canvasWidth = 900;
+    const canvasHeight = 700;
+
+    const maxImageWidth = 600;
+    const maxImageHeight = 400;
+    const imageTop = 120;
 
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-    gradient.addColorStop(0, '#f8fafc');
-    gradient.addColorStop(1, '#e2e8f0');
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    const borderWidth = canvasWidth * 0.02;
-    ctx.strokeStyle = '#6366f1';
-    ctx.lineWidth = borderWidth;
-    ctx.strokeRect(borderWidth / 2, borderWidth / 2, canvasWidth - borderWidth, canvasHeight - borderWidth);
-    ctx.strokeStyle = '#a5b4fc';
-    ctx.lineWidth = borderWidth / 2;
-    ctx.strokeRect(borderWidth * 1.5, borderWidth * 1.5, canvasWidth - borderWidth * 3, canvasHeight - borderWidth * 3);
+    ctx.strokeStyle = '#dddddd';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(10, 10, canvasWidth - 20, canvasHeight - 20);
 
-    ctx.fillStyle = '#1e293b';
-    const titleFontSize = Math.max(40, canvasWidth / 15);
-    ctx.font = `bold ${titleFontSize}px sans-serif`;
+    ctx.fillStyle = '#333333';
+    ctx.font = 'bold 36px Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText("CERTIFICATE OF COMPLETION", canvasWidth / 2, imageYOffset / 2);
+    ctx.fillText("Puzzle Completion Certificate", canvasWidth / 2, 60);
 
-    ctx.drawImage(img, 0, imageYOffset);
-    drawPuzzleGrid(ctx, img.width, img.height, gridSize, imageYOffset);
+    const imgAspectRatio = img.width / img.height;
+    const maxAspectRatio = maxImageWidth / maxImageHeight;
 
-    const footerStartY = imageYOffset + img.height + 50;
+    let displayWidth, displayHeight;
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = `${titleFontSize * 0.4}px sans-serif`;
-    ctx.fillText("Presented to", canvasWidth / 2, footerStartY);
+    if (imgAspectRatio > maxAspectRatio) {
+      displayWidth = maxImageWidth;
+      displayHeight = maxImageWidth / imgAspectRatio;
+    } else {
+      displayHeight = maxImageHeight;
+      displayWidth = maxImageHeight * imgAspectRatio;
+    }
 
-    ctx.fillStyle = '#334155';
-    ctx.font = `bold ${titleFontSize * 0.8}px sans-serif`;
-    ctx.fillText(playerName, canvasWidth / 2, footerStartY + titleFontSize * 0.8);
+    const imageX = (canvasWidth - displayWidth) / 2;
+    const imageY = imageTop;
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = `${titleFontSize * 0.4}px sans-serif`;
-    ctx.fillText("for successfully solving the puzzle in", canvasWidth / 2, footerStartY + titleFontSize * 1.4);
+    ctx.drawImage(img, imageX, imageY, displayWidth, displayHeight);
 
-    ctx.fillStyle = '#6366f1';
-    ctx.font = `bold ${titleFontSize * 0.6}px monospace`;
-    ctx.fillText(timeString, canvasWidth / 2, footerStartY + titleFontSize * 2.1);
+    drawPuzzleGrid(ctx, imageX, imageY, displayWidth, displayHeight, gridSize);
+
+    ctx.fillStyle = '#222222';
+    ctx.font = 'bold 28px Arial, sans-serif';
+    ctx.fillText(playerName, canvasWidth / 2, imageTop + displayHeight + 60);
+
+    ctx.fillStyle = '#666666';
+    ctx.font = '20px Arial, sans-serif';
+    ctx.fillText("has successfully completed", canvasWidth / 2, imageTop + displayHeight + 100);
+
+    ctx.fillStyle = '#444444';
+    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.fillText(`Time Spent: ${timeString}`, canvasWidth / 2, imageTop + displayHeight + 140);
 
     const link = document.createElement('a');
-    link.download = `puzzlify-certificate-${playerName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+    link.download = `puzzle-certificate-${playerName.replace(/\s+/g, '-').toLowerCase()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
 
     onComplete();
   };
+
+  img.onerror = () => {
+    console.error('Failed to load image for certificate');
+    onComplete();
+  };
+
   img.src = imageUrl;
 };
