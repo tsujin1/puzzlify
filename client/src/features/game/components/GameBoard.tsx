@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameLogic } from '../hooks/useGameLogic';
 import { getBackgroundStyle } from '../../../utils/gridHelpers';
 
@@ -12,6 +12,18 @@ const GameBoard = ({ imageUrl, gridSize, onPuzzleSolved }: GameBoardProps) => {
   const size = Number(gridSize);
   const { tiles, handleTileClick, isSolved } = useGameLogic(size);
   const emptyTileId = size * size - 1;
+  
+  const [aspectRatio, setAspectRatio] = useState(1);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => {
+      if (img.naturalHeight) {
+        setAspectRatio(img.naturalWidth / img.naturalHeight);
+      }
+    };
+  }, [imageUrl]);
 
   useEffect(() => {
     if (isSolved && onPuzzleSolved) onPuzzleSolved();
@@ -23,8 +35,8 @@ const GameBoard = ({ imageUrl, gridSize, onPuzzleSolved }: GameBoardProps) => {
         className="relative bg-white p-3 rounded-3xl shadow-2xl shadow-indigo-100 border border-white"
         style={{
           width: 'min(90vw, 500px)',
-          maxWidth: '60vh',
-          aspectRatio: '1/1',
+          aspectRatio: aspectRatio, 
+          maxHeight: '65vh', 
         }}
       >
         <div className="w-full h-full rounded-2xl overflow-hidden relative bg-slate-100 shadow-inner">
@@ -48,7 +60,7 @@ const GameBoard = ({ imageUrl, gridSize, onPuzzleSolved }: GameBoardProps) => {
                   height: `calc(100% / ${size})`,
                   transform: `translate(${col * 100}%, ${row * 100}%)`,
                   ...(shouldShowImage ? getBackgroundStyle(tile.correctPos, size, imageUrl) : {}),
-                  backgroundSize: `${size * 100}% ${size * 100}%`
+                  backgroundSize: `${size * 100}% ${size * 100}%` 
                 }}
               >
                 {!isEmpty && !isSolved && (

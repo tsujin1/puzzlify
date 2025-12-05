@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Link as LinkIcon, Copy, Check, Puzzle, ArrowRight, Sparkles, Image as ImageIcon, Loader2, Diff } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import { createGame } from './createService';
 
 const CreateForm = () => {
@@ -32,6 +33,7 @@ const CreateForm = () => {
     if (!selectedFile) return;
 
     setIsLoading(true);
+    const loadingToast = toast.loading('Uploading image and generating puzzle...');
 
     try {
       const data = await createGame(selectedFile, gridSize);
@@ -45,9 +47,32 @@ const CreateForm = () => {
       await navigator.clipboard.writeText(realLink);
       setAutoCopied(true);
 
+      toast.dismiss(loadingToast);
+      toast.success('Puzzle created!', {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      });
+
     } catch (error) {
       console.error(error);
-      alert("Failed to create puzzle. Is the Server running?");
+      toast.dismiss(loadingToast);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to create puzzle. Is the Server running?";
+
+      toast.error(errorMessage, {
+        style: {
+          borderRadius: '10px',
+          background: '#fff',
+          color: '#ef4444',
+          border: '1px solid #fee2e2'
+        },
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -58,15 +83,19 @@ const CreateForm = () => {
     try {
       await navigator.clipboard.writeText(generatedLink);
       setIsCopied(true);
+      toast.success('Link copied!');
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy: ', err);
+      toast.error('Failed to copy link');
     }
   };
 
   if (generatedLink) {
     return (
       <div className="w-full max-w-md bg-white rounded-4xl shadow-xl border border-white/50 relative overflow-hidden animate-in zoom-in-95 duration-300 mx-4">
+        <Toaster position="top-center" />
+
         <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
         
         <div className="p-6 sm:p-8 text-center flex flex-col items-center">
@@ -140,6 +169,8 @@ const CreateForm = () => {
 
   return (
     <div className="w-full max-w-md bg-white rounded-4xl shadow-xl border border-white/50 relative overflow-hidden mx-4">
+      <Toaster position="top-center" />
+
       <div className="p-6 sm:p-8 pb-0 text-center">
         <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-widest mb-4">
           <Puzzle size={14} /> Puzzle Creator
