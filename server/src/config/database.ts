@@ -1,33 +1,78 @@
 import mongoose from 'mongoose';
 import { env } from './env';
 
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 3000;
+
+let shuttingDown = false;
+
 export const connectDatabase = async (): Promise<void> => {
-  try {
-    await mongoose.connect(env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
-  } catch (error) {
-    console.error('❌ Database connection error:', error);
-    if (env.NODE_ENV === 'production') {
-      process.exit(1);
-    } else {
-      console.warn('⚠️  Continuing without database connection (development mode)');
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await mongoose.connect(env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 10,
+        minPoolSize: 1,
+        retryWrites: true,
+        w: 'majority',
+      });
+
+      console.log('MongoDB connected');
+      return;
+    } catch (error) {
+      console.error(
+        `MongoDB connection failed (attempt ${attempt}/${MAX_RETRIES})`,
+        error
+      );
+
+      if (attempt === MAX_RETRIES) {
+        if (env.NODE_ENV === 'production') {
+          process.exit(1);
+        }
+        throw error;
+      }
+
+      await delay(RETRY_DELAY_MS);
     }
   }
 };
 
-// Handle connection events
-mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️  MongoDB disconnected');
-});
+/* Connection events */
 
-mongoose.connection.on('error', (error) => {
-  console.error('❌ MongoDB connection error:', error);
-});
+if (mongoose.connection.listenerCount('error') === 0) {
+  mongoose.connection.on('error', (error) => {
+    console.error('MongoDB runtime error:', error);
+  });
+}
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await mongoose.connection.close();
-  console.log('MongoDB connection closed through app termination');
-  process.exit(0);
-});
+if (mongoose.connection.listenerCount('disconnected') === 0) {
+  mongoose.connection.on('disconnected', () => {
+    if (!shuttingDown) {
+      console.warn('MongoDB disconnected');
+    }
+  });
+}
 
+/* Graceful shutdown */
+
+const shutdown = async (signal: string) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
+  console.log(`Process received ${signal}. Closing MongoDB connection.`);
+
+  try {
+    await mongoose.connection.close();
+  } finally {
+    process.exit(0);
+  }
+};
+
+process.once('SIGINT', shutdown);
+process.once('SIGTERM', shutdown);
+
+/* Utils */
+
+const delay = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
