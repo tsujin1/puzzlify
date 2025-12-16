@@ -4,8 +4,4 @@ export interface Tile {
   correctPos: number;
 }
 
-export interface GameConfig {
-  _id?: string;
-  imageUrl: string;
-  gridSize: number;
-}
+export type { GameData, GameCreationResponse } from '@shared/types';

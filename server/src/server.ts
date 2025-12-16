@@ -1,29 +1,40 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import gameRoutes from './routes/gameRoutes';
+import app from './app';
+import { env } from './config/env';
+import { connectDatabase } from './config/database';
 
-dotenv.config();
+const startServer = async (): Promise<void> => {
+  try {
+    // Connect to database
+    await connectDatabase();
 
-const app = express();
-const PORT = process.env.PORT || 5000;
-const MONGO_URI =
-  process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/puzzlify';
-
-app.use(cors());
-app.use(express.json());
-
-app.use('/api', gameRoutes);
-
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    // Start server
+    const server = app.listen(env.PORT, () => {
+      console.log(`🚀 Server running on port ${env.PORT}`);
+      console.log(`📝 Environment: ${env.NODE_ENV}`);
+      console.log(`🔗 Health check: http://localhost:${env.PORT}/api/health`);
     });
-  })
-  .catch((err) => {
-    console.error('Database connection error:', err);
-  });
+
+    // Graceful shutdown
+    const gracefulShutdown = (signal: string) => {
+      console.log(`\n${signal} received. Shutting down gracefully...`);
+      server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+      });
+
+      // Force close after 10 seconds
+      setTimeout(() => {
+        console.error('Forcing shutdown...');
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

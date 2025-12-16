@@ -49,42 +49,57 @@ Make sure you have the following installed:
    cd puzzlify
    ```
 
-2. **Install backend dependencies**
+2. **Install all dependencies**
    ```bash
-   cd server
-   npm install
+   npm run install:all
    ```
-
-3. **Install frontend dependencies**
-   ```bash
-   cd ../client
-   npm install
-   ```
-
-4. **Set up environment variables**
    
-   Create a `.env` file in the `server` folder with the following:
+   Or install individually:
+   ```bash
+   npm install              # Root dependencies
+   cd client && npm install # Client dependencies
+   cd ../server && npm install # Server dependencies
    ```
+
+3. **Set up environment variables**
+   
+   **Server:** Create a `.env` file in the `server` folder:
+   ```env
    NODE_ENV=development
    PORT=5000
-   MONGODB_URI=your_mongodb_connection_string
+   MONGODB_URI=mongodb://127.0.0.1:27017/puzzlify
+   CORS_ORIGIN=*
+   MAX_FILE_SIZE_MB=5
    ```
-
-5. **Run the backend**
-   ```bash
-   cd server
-   npm run dev
-   ```
-
-6. **Run the frontend**
-   ```bash
-   cd client
-   npm run dev
-   ```
-
-7. **Access the app**
    
-   Open your browser and navigate to `http://localhost:5173` (or the port shown in your terminal)
+   **Client:** Create a `.env` file in the `client` folder (optional):
+   ```env
+   VITE_API_URL=http://localhost:5000/api
+   ```
+   
+   See `server/.env.example` and `client/.env.example` for reference.
+
+4. **Run the application**
+   
+   **Option 1: Run both client and server together (recommended)**
+   ```bash
+   npm run dev
+   ```
+   
+   **Option 2: Run separately**
+   ```bash
+   # Terminal 1 - Backend
+   npm run dev:server
+   
+   # Terminal 2 - Frontend
+   npm run dev:client
+   ```
+
+5. **Access the app**
+   
+   - Frontend: `http://localhost:5173` (or the port shown in your terminal)
+   - Backend API: `http://localhost:5000/api`
+   - Health Check: `http://localhost:5000/api/health`
 
 ---
 
@@ -101,16 +116,45 @@ Make sure you have the following installed:
 
 ```
 puzzlify/
-├── client/           # React frontend
+├── client/                    # React Frontend
 │   ├── src/
+│   │   ├── components/       # Shared UI components
+│   │   ├── features/          # Feature-based modules
+│   │   │   ├── create/        # Puzzle creation feature
+│   │   │   └── game/          # Game play feature
+│   │   ├── pages/             # Route pages
+│   │   ├── services/          # API service layer
+│   │   ├── hooks/             # Shared React hooks
+│   │   ├── types/             # Client-specific types
+│   │   ├── utils/             # Client utilities
+│   │   └── constants/         # Client constants
 │   ├── public/
 │   └── package.json
-├── server/           # Node.js/Express backend
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
+│
+├── server/                    # Express Backend
+│   ├── src/
+│   │   ├── config/            # Configuration files
+│   │   │   ├── database.ts    # DB connection
+│   │   │   ├── cors.ts        # CORS config
+│   │   │   └── env.ts         # Environment validation
+│   │   ├── controllers/       # Request handlers
+│   │   ├── middleware/        # Express middleware
+│   │   │   ├── errorHandler.ts
+│   │   │   ├── validation.ts
+│   │   │   └── upload.ts
+│   │   ├── models/            # Database models
+│   │   ├── routes/            # API routes
+│   │   ├── app.ts             # Express app config
+│   │   └── server.ts          # Server entry point
 │   └── package.json
+│
+├── shared/                     # Shared Code
+│   ├── types/                 # Shared TypeScript types
+│   ├── constants/             # Shared constants
+│   └── package.json
+│
+├── package.json               # Root workspace config
+├── .gitignore
 └── README.md
 ```
 
