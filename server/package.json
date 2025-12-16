@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/server/src/server.js",
     "dev": "ts-node src/server.ts",
     "lint": "echo 'Linting not configured. Add eslint if needed.'",
     "type-check": "tsc --noEmit"
