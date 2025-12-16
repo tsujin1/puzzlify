@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { CustomError } from './errorHandler';
-import { MIN_GRID_SIZE, MAX_GRID_SIZE } from '@shared/constants';
+import { MIN_GRID_SIZE, MAX_GRID_SIZE } from '../../../shared/constants';
 
 /**
  * Validate grid size parameter

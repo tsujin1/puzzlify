@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && tsc-alias",
+    "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node src/server.ts",
     "lint": "echo 'Linting not configured. Add eslint if needed.'",
@@ -28,7 +28,6 @@
   "devDependencies": {
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
-    "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3"
   }
 }

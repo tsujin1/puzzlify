@@ -1,6 +1,6 @@
 import multer from 'multer';
 import { env } from '../config/env';
-import { MAX_FILE_SIZE_BYTES, ALLOWED_IMAGE_TYPES } from '@shared/constants';
+import { MAX_FILE_SIZE_BYTES, ALLOWED_IMAGE_TYPES } from '../../../shared/constants';
 
 const storage = multer.memoryStorage();
 

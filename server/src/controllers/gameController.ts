@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Game from '../models/Game';
 import { CustomError } from '../middleware/errorHandler';
-import { GameCreationResponse, GameData } from '@shared/types';
+import { GameCreationResponse, GameData } from '../../../shared/types';
 
 export const createGame = async (
   req: Request,
