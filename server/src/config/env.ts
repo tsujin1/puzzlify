@@ -28,10 +28,16 @@ function getEnvNumber(key: string, defaultValue: number): number {
   return parsed;
 }
 
+// Get NODE_ENV first to use in other env var checks
+const nodeEnv = getEnvVar('NODE_ENV', 'development');
+const isProduction = nodeEnv === 'production';
+
 export const env: EnvConfig = {
-  NODE_ENV: getEnvVar('NODE_ENV', 'development'),
+  NODE_ENV: nodeEnv,
   PORT: getEnvNumber('PORT', 5000),
-  MONGODB_URI: getEnvVar('MONGODB_URI', 'mongodb://127.0.0.1:27017/puzzlify'),
+  MONGODB_URI: isProduction
+    ? getEnvVar('MONGODB_URI') // Required in production - no default
+    : getEnvVar('MONGODB_URI', 'mongodb://127.0.0.1:27017/puzzlify'), // Default for development
   CORS_ORIGIN: getEnvVar('CORS_ORIGIN', '*'),
   MAX_FILE_SIZE_MB: getEnvNumber('MAX_FILE_SIZE_MB', 5),
 };
