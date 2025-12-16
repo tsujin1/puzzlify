@@ -25,6 +25,7 @@ const PlayPage = () => {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showMobileHint, setShowMobileHint] = useState(false);
   const [playerName, setPlayerName] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     let interval: number | undefined;
@@ -40,8 +41,21 @@ const PlayPage = () => {
         .then(data => {
           setGameData({ imageUrl: data.imageUrl, gridSize: data.gridSize });
           setLoading(false);
+          // Preload the image
+          if (data.imageUrl) {
+            const img = new Image();
+            img.onload = () => setImageLoaded(true);
+            img.onerror = () => setImageLoaded(false);
+            img.src = data.imageUrl;
+          }
         })
         .catch(() => { setError(true); setLoading(false); });
+    } else if (gameData?.imageUrl) {
+      // Preload image if we have it from location.state
+      const img = new Image();
+      img.onload = () => setImageLoaded(true);
+      img.onerror = () => setImageLoaded(false);
+      img.src = gameData.imageUrl;
     }
   }, [id, gameData]);
 
@@ -109,11 +123,16 @@ const PlayPage = () => {
         </div>
 
         <div className="flex-1 min-h-[200px] lg:max-h-[300px] relative rounded-3xl overflow-hidden shadow-inner border-4 border-white bg-slate-100 mb-6 flex items-center justify-center p-4">
-           <img 
-             src={gameData.imageUrl} 
-             className="max-w-full max-h-full object-contain shadow-sm rounded-lg" 
-             alt="Target" 
-           />
+           {imageLoaded ? (
+             <img 
+               src={gameData.imageUrl} 
+               className="max-w-full max-h-full object-contain shadow-sm rounded-lg" 
+               alt="Target"
+               onError={() => setImageLoaded(false)}
+             />
+           ) : (
+             <div className="text-slate-400 text-sm font-medium">Loading preview...</div>
+           )}
         </div>
 
         <div className="mt-auto pt-4">
@@ -163,7 +182,18 @@ const PlayPage = () => {
              <button onClick={() => setShowMobileHint(false)} className="absolute -top-12 right-0 text-white/80 p-2">
                <X size={24} />
              </button>
-             <img src={gameData.imageUrl} className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white/20" alt="Hint" />
+             {imageLoaded ? (
+               <img 
+                 src={gameData.imageUrl} 
+                 className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white/20" 
+                 alt="Hint"
+                 onError={() => setImageLoaded(false)}
+               />
+             ) : (
+               <div className="w-full h-64 bg-slate-800 rounded-2xl flex items-center justify-center">
+                 <div className="text-white/60 text-sm">Loading image...</div>
+               </div>
+             )}
              <p className="text-white/60 text-center mt-4 font-medium text-sm">Tap anywhere to close</p>
            </div>
         </div>

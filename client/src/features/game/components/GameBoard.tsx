@@ -73,20 +73,101 @@ const GameBoard = ({ imageUrl, gridSize, onPuzzleSolved }: GameBoardProps) => {
   const emptyTileId = size * size - 1;
   
   const [aspectRatio, setAspectRatio] = useState(1);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
+    if (!imageUrl) return;
+    
+    setImageLoaded(false);
+    setImageError(false);
+    
     const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => {
-      if (img.naturalHeight) {
-        setAspectRatio(img.naturalWidth / img.naturalHeight);
+    let retryCount = 0;
+    const maxRetries = 2;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    
+    const attemptLoad = () => {
+      // Handle successful load
+      img.onload = () => {
+        if (img.naturalHeight && img.naturalWidth) {
+          setAspectRatio(img.naturalWidth / img.naturalHeight);
+          setImageLoaded(true);
+          setImageError(false);
+        } else {
+          // Image loaded but invalid dimensions
+          if (retryCount < maxRetries) {
+            retryCount++;
+            timeoutId = setTimeout(() => {
+              // For base64 URLs, just reload the same URL
+              img.src = '';
+              setTimeout(() => {
+                img.src = imageUrl;
+              }, 50);
+            }, 100);
+          } else {
+            setImageError(true);
+          }
+        }
+      };
+      
+      // Handle load errors
+      img.onerror = () => {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          timeoutId = setTimeout(() => {
+            // Force reload by clearing and resetting src
+            img.src = '';
+            setTimeout(() => {
+              img.src = imageUrl;
+            }, 50);
+          }, 500);
+        } else {
+          console.error('Failed to load image after retries');
+          setImageError(true);
+          setImageLoaded(false);
+        }
+      };
+      
+      // Set src after handlers are attached
+      img.src = imageUrl;
+      
+      // If image is already cached, trigger onload manually
+      if (img.complete && img.naturalHeight) {
+        img.onload(null as any);
       }
+    };
+    
+    attemptLoad();
+    
+    // Cleanup function
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      img.onload = null;
+      img.onerror = null;
     };
   }, [imageUrl]);
 
   useEffect(() => {
     if (isSolved && onPuzzleSolved) onPuzzleSolved();
   }, [isSolved, onPuzzleSolved]);
+
+  if (imageError) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-full">
+        <p className="text-red-500 font-bold">Failed to load image. Please refresh the page.</p>
+      </div>
+    );
+  }
+
+  if (!imageLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <p className="mt-4 text-slate-500 font-medium">Loading image...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full relative z-10">
@@ -139,7 +220,7 @@ const GameBoard = ({ imageUrl, gridSize, onPuzzleSolved }: GameBoardProps) => {
                   width: `calc(100% / ${size})`,
                   height: `calc(100% / ${size})`,
                   transform: `translate(${col * 100}%, ${row * 100}%)`,
-                  ...(shouldShowImage ? getBackgroundStyle(tile.correctPos, size, imageUrl) : {}),
+                  ...(shouldShowImage && imageLoaded ? getBackgroundStyle(tile.correctPos, size, imageUrl) : {}),
                   backgroundSize: `${size * 100}% ${size * 100}%` 
                 }}
               >
